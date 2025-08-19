@@ -33,10 +33,26 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input|Mouse")
 	class UInputAction* InputActionLook;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input|Jump")
+	class UInputAction* InputActionJump;
+
 	
 protected:
 	void MovePlayer(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
+	void Jump();
 
+
+// Mouse sensitivity
+protected:
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input|Mouse")
+	float MouseSensitivityX = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "Enhanced Input|Mouse")
+	float MouseSensitivityY = 1.f;
+
+public:
+	virtual void AddPitchInput(float Val) override;
+	virtual void AddYawInput(float Val) override;
 
 };

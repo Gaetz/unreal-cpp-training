@@ -24,6 +24,7 @@ void AMainCharacterController::SetupInputComponent()
 	auto EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
 	EnhancedInput->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMainCharacterController::MovePlayer);
 	EnhancedInput->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMainCharacterController::Look);
+	EnhancedInput->BindAction(InputActionJump, ETriggerEvent::Triggered, this, &AMainCharacterController::Jump);
 }
 
 void AMainCharacterController::SetPawn(APawn* InPawn)
@@ -61,4 +62,22 @@ void AMainCharacterController::Look(const FInputActionValue& Value)
 		Character->AddControllerPitchInput(-LookValue.Y);
 	}
 
+}
+
+void AMainCharacterController::Jump()
+{
+	if (!Character) return;
+	Character->Jump();
+}
+
+void AMainCharacterController::AddPitchInput(float Val)
+{
+	float Multiplier = Val * MouseSensitivityY;
+	Super::AddPitchInput(Multiplier);
+}
+
+void AMainCharacterController::AddYawInput(float Val)
+{
+	float Multiplier = Val * MouseSensitivityX;
+	Super::AddYawInput(Multiplier);
 }
