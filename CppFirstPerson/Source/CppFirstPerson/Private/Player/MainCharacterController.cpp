@@ -23,6 +23,7 @@ void AMainCharacterController::SetupInputComponent()
 	// Bind movement inputs
 	auto EnhancedInput = Cast<UEnhancedInputComponent>(InputComponent);
 	EnhancedInput->BindAction(InputActionMove, ETriggerEvent::Triggered, this, &AMainCharacterController::MovePlayer);
+	EnhancedInput->BindAction(InputActionLook, ETriggerEvent::Triggered, this, &AMainCharacterController::Look);
 }
 
 void AMainCharacterController::SetPawn(APawn* InPawn)
@@ -44,4 +45,20 @@ void AMainCharacterController::MovePlayer(const FInputActionValue& Value)
 	{
 		Character->AddMovementInput(Character->GetActorRightVector(), MoveValue.X);
 	}
+}
+
+void AMainCharacterController::Look(const FInputActionValue& Value)
+{
+	if (!Character) return;
+
+	const FVector2D LookValue = Value.Get<FVector2D>();
+	if (LookValue.X != 0.f)
+	{
+		Character->AddControllerYawInput(LookValue.X);
+	}
+	if (LookValue.Y != 0.f)
+	{
+		Character->AddControllerPitchInput(-LookValue.Y);
+	}
+
 }
