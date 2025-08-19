@@ -26,4 +26,32 @@ public:
 
 	void OnTakeObjectInputPressed();
 	void OnThrowObjectInputPressed();
+
+
+// Debug
+protected:
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Debug")
+	bool bDrawDebugRaycast = false;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Debug", meta = (EditCondition = "bDrawDebugRaycast"))
+	float TimerDebugRaycast = 5.f;
+
+
+// Collisions and raycast
+protected:
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Collision", meta = (ClampMin = "0.0", ClampMax = "5000.0"))
+	float RaycastSize = 50.f;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Collision")
+	TEnumAsByte<ETraceTypeQuery> GravityGunCollisionTraceChannel;
+	ECollisionChannel GravityGunCollisionChannel;
+
+	TWeakObjectPtr<class AMainCharacter> Character = nullptr;
+	TWeakObjectPtr<class APlayerCameraManager> CharacterCameraManager = nullptr;
+
+
+// Pick Up
+protected:
+	class AActor* CurrentPickUp = nullptr;
+	class UPickUpComponent* CurrentPickUpComponent = nullptr;
 };

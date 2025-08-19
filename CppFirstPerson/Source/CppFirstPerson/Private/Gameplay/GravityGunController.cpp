@@ -45,12 +45,14 @@ void UGravityGunController::BeginPlay()
 
 void UGravityGunController::OnTakeObjectInputPressed()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Take object"));
+	if (!GravityGunComponent.IsValid()) return;
+	GravityGunComponent->OnTakeObjectInputPressed();
 }
 
 void UGravityGunController::OnThrowObjectInputPressed(const FInputActionValue& Value)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Throw object"));
+	if (!GravityGunComponent.IsValid()) return;
+	/// TODO
 }
 
 

@@ -19,7 +19,6 @@ void UPickUpComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	
 }
 
