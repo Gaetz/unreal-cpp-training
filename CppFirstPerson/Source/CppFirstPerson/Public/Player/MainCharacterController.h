@@ -18,9 +18,13 @@ public:
 	virtual void SetupInputComponent() override;
 	virtual void SetPawn(APawn* InPawn) override;
 
+
 // Character
 protected:
 	class AMainCharacter* Character = nullptr;
+	TWeakObjectPtr<class UGravityGunController> GravityGunController = nullptr;
+
+
 
 // Inputs
 protected:
@@ -41,6 +45,7 @@ protected:
 	void MovePlayer(const struct FInputActionValue& Value);
 	void Look(const struct FInputActionValue& Value);
 	void Jump();
+
 
 
 // Mouse sensitivity

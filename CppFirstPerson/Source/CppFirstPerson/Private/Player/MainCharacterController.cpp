@@ -10,6 +10,7 @@
 #include "InputActionValue.h"
 
 #include "Player/MainCharacter.h"
+#include "Gameplay/GravityGunController.h"
 
 void AMainCharacterController::SetupInputComponent()
 {
@@ -31,6 +32,13 @@ void AMainCharacterController::SetPawn(APawn* InPawn)
 {
 	Super::SetPawn(InPawn);
 	Character = Cast<AMainCharacter>(InPawn);
+	if (!Character) return;
+
+	GravityGunController = GetComponentByClass<UGravityGunController>();
+	if (GravityGunController.IsValid())
+	{
+		GravityGunController->SetupInputComponentGravityGun(InputComponent, Character);
+	}
 }
 
 void AMainCharacterController::MovePlayer(const FInputActionValue& Value)
