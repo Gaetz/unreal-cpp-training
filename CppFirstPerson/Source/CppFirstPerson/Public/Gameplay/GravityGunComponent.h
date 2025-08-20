@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "GravityGunComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FPickUpTakenDelegate, int, NumberPickUpTaken);
 
 UCLASS(Abstract, Blueprintable, ClassGroup=(GravityGun), meta=(BlueprintSpawnableComponent) )
 class CPPFIRSTPERSON_API UGravityGunComponent : public UActorComponent
@@ -92,4 +93,16 @@ protected:
 
 public:
 	void OnThrowForceMultiplierInputPressed();
+
+
+// Counting pick ups
+protected:
+	int PickUpTaken = 0;
+
+public:
+	void TakePickUp(class APickUpComponent* PickUp);
+	bool IsHoldingPickUp();
+
+	UPROPERTY(BlueprintAssignable, BlueprintCallable)
+	FPickUpTakenDelegate OnPickUpTakenDelegate;
 };

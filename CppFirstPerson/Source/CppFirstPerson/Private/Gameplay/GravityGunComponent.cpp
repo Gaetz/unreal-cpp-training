@@ -100,6 +100,10 @@ void UGravityGunComponent::OnTakeObjectInputPressed()
 	default:
 		break;
 	}
+
+	// Count pick ups
+	PickUpTaken++;
+	OnPickUpTakenDelegate.Broadcast(PickUpTaken);
 }
 
 void UGravityGunComponent::OnThrowObjectInputPressed()
