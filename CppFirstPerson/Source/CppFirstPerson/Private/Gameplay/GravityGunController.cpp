@@ -18,37 +18,37 @@ UGravityGunController::UGravityGunController()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = false;
-
-	// ...
 }
 
 void UGravityGunController::SetupInputComponentGravityGun(TObjectPtr<class UInputComponent> InputComponent, AMainCharacter* InPawn)
 {
-	Character = InPawn;
-	GravityGunComponent = Character->GetComponentByClass<UGravityGunComponent>();
-
-	auto EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
+	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 	if (!EnhancedInputComponent) return;
 	EnhancedInputComponent->BindAction(InputActionTakeObject, ETriggerEvent::Triggered, this, &UGravityGunController::OnTakeObjectInputPressed);
 	EnhancedInputComponent->BindAction(InputActionThrowObject, ETriggerEvent::Triggered, this, &UGravityGunController::OnThrowObjectInputPressed);
+
+	Character = InPawn;
+	GravityGunComponent = Character->GetComponentByClass<UGravityGunComponent>();
 }
 
-
-// Called when the game starts
 void UGravityGunController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
 	
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+// Non-const is useful pour the input binding
 void UGravityGunController::OnTakeObjectInputPressed()
 {
-	if (!GravityGunComponent.IsValid()) return;
-	GravityGunComponent->OnTakeObjectInputPressed();
+	if (GravityGunComponent.IsValid())
+	{
+		GravityGunComponent->OnTakeObjectInputPressed();
+	}
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
+// Non-const is useful pour the input binding
 void UGravityGunController::OnThrowObjectInputPressed(const FInputActionValue& Value)
 {
 	if (!GravityGunComponent.IsValid()) return;

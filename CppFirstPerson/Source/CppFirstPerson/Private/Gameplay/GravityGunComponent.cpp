@@ -25,7 +25,7 @@ void UGravityGunComponent::BeginPlay()
 	Super::BeginPlay();
 
 	Character = Cast<AMainCharacter>(GetOwner());
-	CharacterCameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
+	CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	GravityGunCollisionChannel = UEngineTypes::ConvertToCollisionChannel(GravityGunCollisionTraceChannel);
 
 
@@ -37,24 +37,21 @@ void UGravityGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	UpdatePickUpLocation();
 }
 
 void UGravityGunComponent::OnTakeObjectInputPressed()
 {
-	// Launch a ray to find a pick up object
-	FVector RaycastStart = CharacterCameraManager->GetCameraLocation();
-	FVector RaycastEnd = RaycastStart + CharacterCameraManager->GetActorForwardVector() * RaycastSize;
-
-	// Raycast
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Character.Get());
-	FHitResult RaycastHit;
-	bool bHit = GetWorld()->LineTraceSingleByChannel(RaycastHit, RaycastStart, RaycastEnd, GravityGunCollisionChannel, Params);
-	if (!bHit)
+	// Check we do not already have a pickup object
+	if (CurrentPickUp.IsValid())
 	{
+		ReleasePickUp();
 		return;
 	}
+	
+	// Launch a ray to find a pickup object
+	const FVector RaycastStart = CameraManager->GetCameraLocation();
+	const FVector RaycastEnd = RaycastStart + CameraManager->GetActorForwardVector() * RaycastSize;
 
 	// Debug display raycast
 #if !UE_BUILD_SHIPPING
@@ -64,10 +61,65 @@ void UGravityGunComponent::OnTakeObjectInputPressed()
 	}
 #endif
 
+	// Raycast
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Character.Get());
+	FHitResult HitResult;
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, RaycastStart, RaycastEnd, GravityGunCollisionChannel, Params);
+	if (!bHit)
+	{
+		return;
+	}
+
 	// Get pick up
-	CurrentPickUp = RaycastHit.GetActor();
-	if (!CurrentPickUp) return;
+	CurrentPickUp = HitResult.GetActor();
+
 	CurrentPickUpComponent = CurrentPickUp->GetComponentByClass<UPickUpComponent>();
-	if (!CurrentPickUpComponent) return;
+	if (!CurrentPickUpComponent.IsValid()) return;
+	CurrentPickUpMesh = CurrentPickUp->GetComponentByClass<UStaticMeshComponent>();
+	if (!CurrentPickUpMesh.IsValid()) return;
+
+	// Update pick up collision profile and physics
+	CurrentPickUpMesh->SetSimulatePhysics(false);
+	PickUpPreviousCollisionProfileName = CurrentPickUpMesh->GetCollisionProfileName();
+	CurrentPickUpMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+	
 	UE_LOG(LogTemp, Warning, TEXT("Hit %s"), *CurrentPickUp->GetName());
+}
+
+void UGravityGunComponent::OnThrowObjectInputPressed()
+{
+	if (!CurrentPickUp.IsValid()) return;
+	ReleasePickUp(true);
+}
+
+void UGravityGunComponent::UpdatePickUpLocation() const
+{
+	if (!CurrentPickUp.IsValid()) return;
+	const FVector NewLocation = CameraManager->GetCameraLocation() + CameraManager->GetActorForwardVector() * PickUpDistanceFromPlayer;
+	CurrentPickUp->SetActorLocationAndRotation(NewLocation, CameraManager->GetCameraRotation());
+}
+
+void UGravityGunComponent::ReleasePickUp(const bool bThrow)
+{
+	// Set back physics and collision profile
+	CurrentPickUpMesh->SetSimulatePhysics(true);
+	CurrentPickUpMesh->SetCollisionProfileName(PickUpPreviousCollisionProfileName);
+
+	if (bThrow)
+	{
+		const FVector Impulse = CameraManager->GetActorForwardVector() * PickUpThrowForce;
+		CurrentPickUpMesh->AddImpulse(Impulse);
+		const FVector AngularImpulse = FVector(
+			FMath::RandRange(0.0, PickUpThrowAngularForce.X),
+			FMath::RandRange(0.0, PickUpThrowAngularForce.Y),
+			FMath::RandRange(0.0, PickUpThrowAngularForce.Z)
+		);
+		CurrentPickUpMesh->AddAngularImpulseInDegrees(AngularImpulse);
+	}
+	
+	// Clear references
+	CurrentPickUp = nullptr;
+	CurrentPickUpComponent = nullptr;
+	CurrentPickUpMesh = nullptr;
 }

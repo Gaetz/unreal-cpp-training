@@ -40,18 +40,32 @@ protected:
 // Collisions and raycast
 protected:
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Collision", meta = (ClampMin = "0.0", ClampMax = "5000.0"))
-	float RaycastSize = 50.f;
+	float RaycastSize = 500.f;
 
 	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Collision")
 	TEnumAsByte<ETraceTypeQuery> GravityGunCollisionTraceChannel;
 	ECollisionChannel GravityGunCollisionChannel;
 
 	TWeakObjectPtr<class AMainCharacter> Character = nullptr;
-	TWeakObjectPtr<class APlayerCameraManager> CharacterCameraManager = nullptr;
+	TWeakObjectPtr<class APlayerCameraManager> CameraManager = nullptr;
 
 
 // Pick Up
 protected:
-	class AActor* CurrentPickUp = nullptr;
-	class UPickUpComponent* CurrentPickUpComponent = nullptr;
+	TWeakObjectPtr<AActor> CurrentPickUp = nullptr;
+	TWeakObjectPtr<class UPickUpComponent> CurrentPickUpComponent = nullptr;
+	TWeakObjectPtr<class UStaticMeshComponent> CurrentPickUpMesh = nullptr;
+	FName PickUpPreviousCollisionProfileName = NAME_None;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "50.0"))
+	float PickUpDistanceFromPlayer = 200.f;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "50.0"))
+	float PickUpThrowForce = 5000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up")
+	FVector PickUpThrowAngularForce = FVector(5000.f, 3000.f, 6000.f);
+	
+	void UpdatePickUpLocation() const;
+	void ReleasePickUp(bool bThrow = false);
 };
