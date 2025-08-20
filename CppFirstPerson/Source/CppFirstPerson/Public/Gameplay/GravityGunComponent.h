@@ -105,4 +105,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable, BlueprintCallable)
 	FPickUpTakenDelegate OnPickUpTakenDelegate;
+
+	
+// Throw for progress bar
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Gravity Gun")
+	float GetTimeToReachMaxThrowForce() const;
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Gravity Gun")
+	float GetCurrentTimeToReachMaxThrowForce() const;
 };
