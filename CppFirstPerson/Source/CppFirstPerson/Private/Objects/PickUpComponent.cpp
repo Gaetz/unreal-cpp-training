@@ -19,3 +19,24 @@ void UPickUpComponent::BeginPlay()
 
 	
 }
+
+void UPickUpComponent::StartDestroyTimer()
+{
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer(DestroyTimerHandle);
+	TimerManager.SetTimer(DestroyTimerHandle, this, &UPickUpComponent::DestroyPickUp, PickUpStruct.DestroyTime, false);
+}
+
+void UPickUpComponent::DestroyPickUp()
+{
+	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	TimerManager.ClearTimer(DestroyTimerHandle);
+
+	OnPickUpDestroyed.Broadcast();
+	GetOwner()->Destroy();
+}
+
+EPickUpType UPickUpComponent::GetPickUpType() const
+{
+	return PickUpStruct.PickUpType;
+}

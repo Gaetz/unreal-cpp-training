@@ -87,6 +87,9 @@ protected:
 	void ReleasePickUp(bool bThrow = false);
 	void UpdateThrowForceTimer(float DeltaTime);
 
+	UFUNCTION()
+	void OnHoldPickUpDestroyed();
+
 public:
 	void OnThrowForceMultiplierInputPressed();
 };

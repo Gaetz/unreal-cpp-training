@@ -83,6 +83,17 @@ void UGravityGunComponent::OnTakeObjectInputPressed()
 	CurrentPickUpMesh->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
 	
 	UE_LOG(LogTemp, Warning, TEXT("Hit %s"), *CurrentPickUp->GetName());
+
+	switch (CurrentPickUpComponent->GetPickUpType())
+	{
+	case EPickUpType::DestroyAfterPickup:
+		// Start destroy timer and trigger pickup holding management
+		CurrentPickUpComponent->StartDestroyTimer();
+		CurrentPickUpComponent->OnPickUpDestroyed.AddUniqueDynamic(this, &UGravityGunComponent::OnHoldPickUpDestroyed);
+		break;
+	default:
+		break;
+	}
 }
 
 void UGravityGunComponent::OnThrowObjectInputPressed()
@@ -96,6 +107,17 @@ void UGravityGunComponent::OnThrowObjectInputPressed()
 void UGravityGunComponent::OnThrowObjectInputReleased()
 {
 	if (!CurrentPickUp.IsValid()) return;
+
+	switch (CurrentPickUpComponent->GetPickUpType())
+	{
+	case EPickUpType::DestroyAfterThrow:
+		// Start destroy timer
+		CurrentPickUpComponent->StartDestroyTimer();
+		break;
+	default:
+		break;
+	}
+
 	ReleasePickUp(true);
 	// Reset throw force timer
 	bUpdateThrowForceTimer = false;
@@ -112,6 +134,12 @@ void UGravityGunComponent::UpdatePickUpLocation() const
 
 void UGravityGunComponent::ReleasePickUp(const bool bThrow)
 {
+	if (CurrentPickUpComponent->GetPickUpType() == EPickUpType::DestroyAfterPickup)
+	{
+		// Remove the delegate
+		CurrentPickUpComponent->OnPickUpDestroyed.RemoveDynamic(this, &UGravityGunComponent::OnHoldPickUpDestroyed);
+	}
+	
 	// Set back physics and collision profile
 	CurrentPickUpMesh->SetSimulatePhysics(true);
 	CurrentPickUpMesh->SetCollisionProfileName(PickUpPreviousCollisionProfileName);
@@ -162,6 +190,12 @@ void UGravityGunComponent::UpdateThrowForceTimer(float DeltaTime)
 	PredictParams.bTraceComplex = false;
 	UGameplayStatics::PredictProjectilePath(GetWorld(), PredictParams, PredictResult);
 	*/
+}
+
+void UGravityGunComponent::OnHoldPickUpDestroyed()
+{
+	CurrentPickUpComponent->OnPickUpDestroyed.RemoveDynamic(this, &UGravityGunComponent::OnHoldPickUpDestroyed);
+	ReleasePickUp();
 }
 
 void UGravityGunComponent::OnThrowForceMultiplierInputPressed()
