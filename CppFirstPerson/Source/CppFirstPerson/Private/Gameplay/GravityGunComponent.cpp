@@ -86,7 +86,13 @@ void UGravityGunComponent::OnTakeObjectInputPressed()
 
 	switch (CurrentPickUpComponent->GetPickUpType())
 	{
+	case EPickUpType::DestroyAfterThrow:
+		// Reset timer if picked up again
+		CurrentPickUpComponent->ClearDestroyTimer();
+		break;
 	case EPickUpType::DestroyAfterPickup:
+		// Reset timer if picked up again
+		CurrentPickUpComponent->ClearDestroyTimer();
 		// Start destroy timer and trigger pickup holding management
 		CurrentPickUpComponent->StartDestroyTimer();
 		CurrentPickUpComponent->OnPickUpDestroyed.AddUniqueDynamic(this, &UGravityGunComponent::OnHoldPickUpDestroyed);

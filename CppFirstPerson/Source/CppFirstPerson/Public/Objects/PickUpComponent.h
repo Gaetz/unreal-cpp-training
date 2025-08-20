@@ -60,5 +60,6 @@ public:
 	FOnPickUpDestroyDelegate OnPickUpDestroyed;
 	
 	void StartDestroyTimer();
+	void ClearDestroyTimer();
 	EPickUpType GetPickUpType() const;
 };

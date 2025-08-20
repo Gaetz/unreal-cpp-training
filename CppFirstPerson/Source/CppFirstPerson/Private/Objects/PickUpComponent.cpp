@@ -16,8 +16,6 @@ UPickUpComponent::UPickUpComponent()
 void UPickUpComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	
 }
 
 void UPickUpComponent::StartDestroyTimer()
@@ -27,11 +25,15 @@ void UPickUpComponent::StartDestroyTimer()
 	TimerManager.SetTimer(DestroyTimerHandle, this, &UPickUpComponent::DestroyPickUp, PickUpStruct.DestroyTime, false);
 }
 
-void UPickUpComponent::DestroyPickUp()
+void UPickUpComponent::ClearDestroyTimer()
 {
 	FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 	TimerManager.ClearTimer(DestroyTimerHandle);
+}
 
+void UPickUpComponent::DestroyPickUp()
+{
+	ClearDestroyTimer();
 	OnPickUpDestroyed.Broadcast();
 	GetOwner()->Destroy();
 }
