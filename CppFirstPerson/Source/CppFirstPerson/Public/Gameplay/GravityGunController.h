@@ -34,6 +34,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
 	class UInputAction* InputActionThrowObject;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Enhanced Input")
+	class UInputAction* InputActionThrowForceMultiplier;
+
 	void OnTakeObjectInputPressed();
-	void OnThrowObjectInputPressed(const struct FInputActionValue& Value);
+	void OnThrowObjectInputTriggered(const struct FInputActionValue& Value);
+	void OnThrowForceMultiplierInputPressed();
 };

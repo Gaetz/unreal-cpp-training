@@ -26,6 +26,7 @@ public:
 
 	void OnTakeObjectInputPressed();
 	void OnThrowObjectInputPressed();
+	void OnThrowObjectInputReleased();
 
 
 // Debug
@@ -57,15 +58,35 @@ protected:
 	TWeakObjectPtr<class UStaticMeshComponent> CurrentPickUpMesh = nullptr;
 	FName PickUpPreviousCollisionProfileName = NAME_None;
 
-	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "50.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "100.0", ClampMax = "1000.0"))
 	float PickUpDistanceFromPlayer = 200.f;
 
-	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "50.0"))
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "-200.0", ClampMax = "200.0"))
+	float PickUpHeightFromPlayer = -10.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "100.0", ClampMax = "10000.0"))
 	float PickUpThrowForce = 5000.f;
 
-	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Pick Up")
-	FVector PickUpThrowAngularForce = FVector(5000.f, 3000.f, 6000.f);
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up")
+	FVector PickUpThrowAngularForce = FVector(50000.f, 30000.f, 60000.f);
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "100.0", ClampMax = "10000.0"))
+	float PickUpMaxThrowForce = 10000.f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "0.1", ClampMax = "10.0"))
+	float TimeToReachMaxThrowForce = 3.f;
+	float CurrentTimeToReachMaxThrowForce = 0.f;
+	
+	bool bUpdateThrowForceTimer = false;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "0.1", ClampMax = "10.0"))
+	float PickUpThrowForceMultiplier = 3.f;
+	float CurrentPickUpThrowForceMultiplier = 1.f;
 	
 	void UpdatePickUpLocation() const;
 	void ReleasePickUp(bool bThrow = false);
+	void UpdateThrowForceTimer(float DeltaTime);
+
+public:
+	void OnThrowForceMultiplierInputPressed();
 };

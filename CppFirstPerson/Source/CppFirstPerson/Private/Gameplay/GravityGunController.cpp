@@ -25,7 +25,8 @@ void UGravityGunController::SetupInputComponentGravityGun(TObjectPtr<class UInpu
 	UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(InputComponent);
 	if (!EnhancedInputComponent) return;
 	EnhancedInputComponent->BindAction(InputActionTakeObject, ETriggerEvent::Triggered, this, &UGravityGunController::OnTakeObjectInputPressed);
-	EnhancedInputComponent->BindAction(InputActionThrowObject, ETriggerEvent::Triggered, this, &UGravityGunController::OnThrowObjectInputPressed);
+	EnhancedInputComponent->BindAction(InputActionThrowObject, ETriggerEvent::Triggered, this, &UGravityGunController::OnThrowObjectInputTriggered);
+	EnhancedInputComponent->BindAction(InputActionThrowForceMultiplier, ETriggerEvent::Triggered, this, &UGravityGunController::OnThrowForceMultiplierInputPressed);
 
 	Character = InPawn;
 	GravityGunComponent = Character->GetComponentByClass<UGravityGunComponent>();
@@ -49,10 +50,23 @@ void UGravityGunController::OnTakeObjectInputPressed()
 
 // ReSharper disable once CppMemberFunctionMayBeConst
 // Non-const is useful pour the input binding
-void UGravityGunController::OnThrowObjectInputPressed(const FInputActionValue& Value)
+void UGravityGunController::OnThrowObjectInputTriggered(const FInputActionValue& Value)
 {
 	if (!GravityGunComponent.IsValid()) return;
-	/// TODO
+	const float CountValue = Value.Get<float>();
+	if (CountValue > 0.f)
+	{
+		GravityGunComponent->OnThrowObjectInputPressed();
+	}
+	else
+	{
+		GravityGunComponent->OnThrowObjectInputReleased();
+	}
 }
 
+void UGravityGunController::OnThrowForceMultiplierInputPressed()
+{
+	if (!GravityGunComponent.IsValid()) return;
+	GravityGunComponent->OnThrowForceMultiplierInputPressed();
+}
 

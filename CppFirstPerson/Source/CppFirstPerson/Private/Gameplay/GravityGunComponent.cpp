@@ -3,6 +3,7 @@
 
 #include "Gameplay/GravityGunComponent.h"
 
+#include "MathUtil.h"
 #include "Kismet/GameplayStatics.h"
 
 #include "Player/MainCharacter.h"
@@ -14,8 +15,6 @@ UGravityGunComponent::UGravityGunComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -27,8 +26,6 @@ void UGravityGunComponent::BeginPlay()
 	Character = Cast<AMainCharacter>(GetOwner());
 	CameraManager = UGameplayStatics::GetPlayerCameraManager(GetWorld(), 0);
 	GravityGunCollisionChannel = UEngineTypes::ConvertToCollisionChannel(GravityGunCollisionTraceChannel);
-
-
 }
 
 
@@ -38,6 +35,7 @@ void UGravityGunComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	UpdatePickUpLocation();
+	UpdateThrowForceTimer(DeltaTime);
 }
 
 void UGravityGunComponent::OnTakeObjectInputPressed()
@@ -90,14 +88,26 @@ void UGravityGunComponent::OnTakeObjectInputPressed()
 void UGravityGunComponent::OnThrowObjectInputPressed()
 {
 	if (!CurrentPickUp.IsValid()) return;
+	// Prepare pickup throw
+	bUpdateThrowForceTimer = true;
+	CurrentTimeToReachMaxThrowForce = 0.f;
+}
+
+void UGravityGunComponent::OnThrowObjectInputReleased()
+{
+	if (!CurrentPickUp.IsValid()) return;
 	ReleasePickUp(true);
+	// Reset throw force timer
+	bUpdateThrowForceTimer = false;
+	CurrentTimeToReachMaxThrowForce = 0.f;
 }
 
 void UGravityGunComponent::UpdatePickUpLocation() const
 {
 	if (!CurrentPickUp.IsValid()) return;
 	const FVector NewLocation = CameraManager->GetCameraLocation() + CameraManager->GetActorForwardVector() * PickUpDistanceFromPlayer;
-	CurrentPickUp->SetActorLocationAndRotation(NewLocation, CameraManager->GetCameraRotation());
+	const FRotator NewRotation = CameraManager->GetCameraRotation();
+	CurrentPickUp->SetActorLocationAndRotation(NewLocation, NewRotation);
 }
 
 void UGravityGunComponent::ReleasePickUp(const bool bThrow)
@@ -108,18 +118,53 @@ void UGravityGunComponent::ReleasePickUp(const bool bThrow)
 
 	if (bThrow)
 	{
-		const FVector Impulse = CameraManager->GetActorForwardVector() * PickUpThrowForce;
+		float ThrowForceAlpha;
+		float ThrowForce;
+		ThrowForceAlpha = FMath::Clamp(CurrentTimeToReachMaxThrowForce / TimeToReachMaxThrowForce, 0.f, 1.f);
+		ThrowForce = FMath::Lerp(PickUpThrowForce, PickUpMaxThrowForce, ThrowForceAlpha) * CurrentPickUpThrowForceMultiplier;
+	
+		const FVector Impulse = CameraManager->GetActorForwardVector() * ThrowForce;
 		CurrentPickUpMesh->AddImpulse(Impulse);
 		const FVector AngularImpulse = FVector(
 			FMath::RandRange(0.0, PickUpThrowAngularForce.X),
 			FMath::RandRange(0.0, PickUpThrowAngularForce.Y),
 			FMath::RandRange(0.0, PickUpThrowAngularForce.Z)
 		);
-		CurrentPickUpMesh->AddAngularImpulseInDegrees(AngularImpulse);
+		CurrentPickUpMesh->AddAngularImpulseInDegrees(AngularImpulse * CurrentPickUpThrowForceMultiplier);
 	}
 	
 	// Clear references
 	CurrentPickUp = nullptr;
 	CurrentPickUpComponent = nullptr;
 	CurrentPickUpMesh = nullptr;
+}
+
+void UGravityGunComponent::UpdateThrowForceTimer(float DeltaTime)
+{
+	if (!bUpdateThrowForceTimer) return;
+	CurrentTimeToReachMaxThrowForce += DeltaTime;
+
+	/*
+	// Predict projectile path
+	FPredictProjectilePathParams PredictParams;
+	FPredictProjectilePathResult PredictResult;
+	PredictParams.StartLocation = CurrentPickUp->GetActorLocation();
+	PredictParams.LaunchVelocity = CameraManager->GetActorForwardVector() * PickUpThrowForce;
+	PredictParams.bTraceWithCollision = true;
+	PredictParams.ProjectileRadius = 0.f;
+	PredictParams.MaxSimTime = 2.f;
+	PredictParams.bTraceWithChannel = true;
+	PredictParams.TraceChannel = ECollisionChannel::ECC_WorldStatic;
+	PredictParams.ObjectTypes.Add(EObjectTypeQuery::ObjectTypeQuery1);
+	PredictParams.SimFrequency = 25.f;
+	PredictParams.DrawDebugType = EDrawDebugTrace::ForDuration;
+	PredictParams.DrawDebugTime = 5.f;
+	PredictParams.bTraceComplex = false;
+	UGameplayStatics::PredictProjectilePath(GetWorld(), PredictParams, PredictResult);
+	*/
+}
+
+void UGravityGunComponent::OnThrowForceMultiplierInputPressed()
+{
+	CurrentPickUpThrowForceMultiplier = CurrentPickUpThrowForceMultiplier == 1.f ? PickUpThrowForceMultiplier : 1.f;
 }
