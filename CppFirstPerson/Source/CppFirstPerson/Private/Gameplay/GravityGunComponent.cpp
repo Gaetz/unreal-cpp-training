@@ -8,6 +8,7 @@
 
 #include "Player/MainCharacter.h"
 #include "Objects/PickUpComponent.h"
+#include "Gameplay/GravityGunDataAsset.h"
 
 // Sets default values for this component's properties
 UGravityGunComponent::UGravityGunComponent()
@@ -156,18 +157,24 @@ void UGravityGunComponent::ReleasePickUp(const bool bThrow)
 
 	if (bThrow)
 	{
-		float ThrowForceAlpha;
-		float ThrowForce;
-		ThrowForceAlpha = FMath::Clamp(CurrentTimeToReachMaxThrowForce / TimeToReachMaxThrowForce, 0.f, 1.f);
-		ThrowForce = FMath::Lerp(PickUpThrowForce, PickUpMaxThrowForce, ThrowForceAlpha) * CurrentPickUpThrowForceMultiplier;
-	
+		float ThrowForce { 0.f };
+		FVector AngularImpulse { FVector::ZeroVector };
+
+		if (GravityGunDataAsset)
+		{
+			float ThrowForceAlpha { 0.f };
+			ThrowForceAlpha = FMath::Clamp(CurrentTimeToReachMaxThrowForce / GravityGunDataAsset->TimeToReachMaxThrowForce, 0.f, 1.f);
+			ThrowForce = FMath::Lerp(GravityGunDataAsset->PickUpThrowForce, GravityGunDataAsset->PickUpMaxThrowForce, ThrowForceCurve->GetFloatValue(ThrowForceAlpha)) * CurrentPickUpThrowForceMultiplier;
+			const FVector PickUpThrowAngularForce = GravityGunDataAsset->PickUpThrowAngularForce;
+			AngularImpulse = FVector(
+				FMath::RandRange(0.0, PickUpThrowAngularForce.X),
+				FMath::RandRange(0.0, PickUpThrowAngularForce.Y),
+				FMath::RandRange(0.0, PickUpThrowAngularForce.Z)
+			);
+		}
+		
 		const FVector Impulse = CameraManager->GetActorForwardVector() * ThrowForce;
 		CurrentPickUpMesh->AddImpulse(Impulse);
-		const FVector AngularImpulse = FVector(
-			FMath::RandRange(0.0, PickUpThrowAngularForce.X),
-			FMath::RandRange(0.0, PickUpThrowAngularForce.Y),
-			FMath::RandRange(0.0, PickUpThrowAngularForce.Z)
-		);
 		CurrentPickUpMesh->AddAngularImpulseInDegrees(AngularImpulse * CurrentPickUpThrowForceMultiplier);
 	}
 	
@@ -215,7 +222,7 @@ void UGravityGunComponent::OnThrowForceMultiplierInputPressed()
 
 float UGravityGunComponent::GetTimeToReachMaxThrowForce() const
 {
-	return TimeToReachMaxThrowForce;
+	return GravityGunDataAsset->TimeToReachMaxThrowForce;
 }
 
 float UGravityGunComponent::GetCurrentTimeToReachMaxThrowForce() const

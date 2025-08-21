@@ -64,18 +64,10 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "-200.0", ClampMax = "200.0"))
 	float PickUpHeightFromPlayer = -10.f;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "100.0", ClampMax = "10000.0"))
-	float PickUpThrowForce = 5000.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up")
-	FVector PickUpThrowAngularForce = FVector(50000.f, 30000.f, 60000.f);
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "100.0", ClampMax = "10000.0"))
-	float PickUpMaxThrowForce = 10000.f;
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun")
+	class UGravityGunDataAsset* GravityGunDataAsset = nullptr;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "0.1", ClampMax = "10.0"))
-	float TimeToReachMaxThrowForce = 3.f;
 	float CurrentTimeToReachMaxThrowForce = 0.f;
 	
 	bool bUpdateThrowForceTimer = false;
@@ -111,6 +103,11 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Gravity Gun")
 	float GetTimeToReachMaxThrowForce() const;
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Gravity Gun")
 	float GetCurrentTimeToReachMaxThrowForce() const;
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "Gravity Gun|Curve")
+	class UCurveFloat* ThrowForceCurve = nullptr;
 };
