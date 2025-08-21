@@ -209,6 +209,20 @@ void UGravityGunComponent::UpdateThrowForceTimer(float DeltaTime)
 	*/
 }
 
+void UGravityGunComponent::OnUpdateGravityGunDataAsset()
+{
+	// Do nothing if we had no previous values
+	if (!GravityGunDataAsset) return;
+	// Update with new data:
+	/*
+	 * EXAMPLE
+	TimeToReachMaxThrowForce = GravityGunDataAsset->TimeToReachMaxThrowForce;
+	PickUpThrowForce = GravityGunDataAsset->PickUpThrowForce;
+	PickUpMaxThrowForce = GravityGunDataAsset->PickUpMaxThrowForce;
+	PickUpThrowAngularForce = GravityGunDataAsset->PickUpThrowAngularForce;
+	*/
+}
+
 void UGravityGunComponent::OnHoldPickUpDestroyed()
 {
 	CurrentPickUpComponent->OnPickUpDestroyed.RemoveDynamic(this, &UGravityGunComponent::OnHoldPickUpDestroyed);
@@ -219,6 +233,22 @@ void UGravityGunComponent::OnThrowForceMultiplierInputPressed()
 {
 	CurrentPickUpThrowForceMultiplier = CurrentPickUpThrowForceMultiplier == 1.f ? PickUpThrowForceMultiplier : 1.f;
 }
+
+#if WITH_EDITOR
+void UGravityGunComponent::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+	// We get what was change
+	FName PropertyName = (PropertyChangedEvent.Property != NULL) ? PropertyChangedEvent.Property->GetFName() : NAME_None;
+	// We check we are using a valid data asset
+	if (IsTemplate() || !HasAnyFlags(RF_Transient | RF_NeedLoad)) return;
+	// ...and if the object is our data asset, we trigger update data
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(UGravityGunComponent, GravityGunDataAsset))
+	{
+		OnUpdateGravityGunDataAsset();
+	}
+}
+#endif 
 
 float UGravityGunComponent::GetTimeToReachMaxThrowForce() const
 {

@@ -3,6 +3,8 @@
 
 #include "_Test/Goal.h"
 #include "Components/BoxComponent.h"
+#include "Components/PointLightComponent.h"
+
 #include "Objects/PickUpComponent.h"
 
 AGoal::AGoal(const FObjectInitializer& ObjectInitializer)
@@ -12,6 +14,11 @@ AGoal::AGoal(const FObjectInitializer& ObjectInitializer)
 	if (CollisionBox)
 	{
 		SetRootComponent(CollisionBox);
+	}
+	PointLight = ObjectInitializer.CreateOptionalDefaultSubobject<UPointLightComponent>(this, TEXT("PointLight"));
+	if (PointLight)
+	{
+		PointLight->SetupAttachment(RootComponent);
 	}
 }
 
@@ -37,5 +44,34 @@ void AGoal::OnGoalOverlap(UPrimitiveComponent* OverlappedComponent, AActor* Othe
 
 	Score++;
 	UE_LOG(LogTemp, Warning, TEXT("Score: %d"), Score);
+}
+
+void AGoal::UpdatePointLight()
+{
+	if (!PointLight) return;
+	// Set light color based on team
+	FLinearColor LightColor = FLinearColor::White;
+	switch (GoalTeam)
+	{
+	case EGoalTeam::Red:
+		LightColor = FLinearColor::Red;
+		break;
+	case EGoalTeam::Blue:
+		LightColor = FLinearColor::Blue;
+		break;
+	default:
+		break;
+	}
+	PointLight->SetLightColor(LightColor);
+}
+
+void AGoal::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+#if WITH_EDITOR
+	if (IsTemplate() || !HasAnyFlags(RF_Transient | RF_NeedLoad)) return;
+	UpdatePointLight();
+#endif
+	
 }
 

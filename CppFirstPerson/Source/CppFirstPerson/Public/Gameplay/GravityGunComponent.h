@@ -69,7 +69,6 @@ protected:
 	class UGravityGunDataAsset* GravityGunDataAsset = nullptr;
 	
 	float CurrentTimeToReachMaxThrowForce = 0.f;
-	
 	bool bUpdateThrowForceTimer = false;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Gravity Gun|Pick Up", meta = (ClampMin = "0.1", ClampMax = "10.0"))
@@ -79,6 +78,8 @@ protected:
 	void UpdatePickUpLocation() const;
 	void ReleasePickUp(bool bThrow = false);
 	void UpdateThrowForceTimer(float DeltaTime);
+	void OnUpdateGravityGunDataAsset();
+	
 
 	UFUNCTION()
 	void OnHoldPickUpDestroyed();
@@ -86,6 +87,9 @@ protected:
 public:
 	void OnThrowForceMultiplierInputPressed();
 
+#if WITH_EDITOR
+	void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
 
 // Counting pick ups
 protected:

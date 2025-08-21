@@ -6,6 +6,15 @@
 #include "GameFramework/Actor.h"
 #include "Goal.generated.h"
 
+UENUM()
+enum class EGoalTeam : uint8
+{
+	None UMETA(Hidden),
+	Red,
+	Blue,
+	MAX UMETA(Hidden),
+};
+
 UCLASS()
 class CPPFIRSTPERSON_API AGoal : public AActor
 {
@@ -27,9 +36,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	class UBoxComponent* CollisionBox = nullptr;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UPointLightComponent* PointLight = nullptr;
+
 	unsigned int Score = 0;
+	EGoalTeam GoalTeam = EGoalTeam::Red;
 
 	UFUNCTION()
 	void OnGoalOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void UpdatePointLight();
 
+public:
+	virtual void OnConstruction(const FTransform& Transform) override;
 };
